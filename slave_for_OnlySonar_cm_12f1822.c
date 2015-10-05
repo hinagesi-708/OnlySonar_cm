@@ -79,10 +79,6 @@ int main(void) {
                     count_time += TMR1;
                 }
                 count_time = count_time / 6.169463087248322;
-                if(count_time > 4000) count_time = 4000;
-                if(count_time < 20) count_time = 0;
-//                send_data[0] = count_time % 0x100;
-//                send_data[1] = count_time / 0x100;
                 average[i] = count_time;
                 __delay_ms(1);
             }
@@ -91,6 +87,8 @@ int main(void) {
             average_ans += average[i];
         }
         average_ans = average_ans / 5;
+        if(count_time > 4000) count_time = 4000;
+        else if(count_time < 20) count_time = 0;
         send_data[0] = average_ans % 0x100;
         send_data[1] = average_ans / 0x100;
     }
