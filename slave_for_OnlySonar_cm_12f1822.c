@@ -90,6 +90,7 @@ int main(void) {
         for( i = 0; i < 5; i++){
             average_ans += average[i];
         }
+        average_ans = average_ans / 5;
         send_data[0] = average_ans % 0x100;
         send_data[1] = average_ans / 0x100;
     }
