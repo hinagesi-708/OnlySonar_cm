@@ -48,42 +48,52 @@ static void interrupt ForInterrupt(){
 int main(void) {
     init();
     I2C_init();
-
+    int i = 0;
+    unsigned short average[5] = {0};
+    unsigned short average_ans = 0;
     while (1) {
-        TRISA0 = 0;         //OUTPUT
-        RA0 = 0;            //LOW
-        __delay_us(2);
-        RA0 = 1;            //HIGH
-        __delay_us(5);
-        RA0 = 0;            //LOW
-    
-        TRISA0 = 1;
-        if(RA0 == 1){
-            TMR1L = 0;
-            TMR1H = 0;
-            TMR1IF = 0;
-            count_time = 0;
-            while(RA0 == 1){
-                if(TMR0IF){
-                    count_time += 65536;
-                    TMR1IF = 0;
+        for( i = 0;i < 5;i++){
+            TRISA0 = 0;         //OUTPUT
+            RA0 = 0;            //LOW
+            __delay_us(2);
+            RA0 = 1;            //HIGH
+            __delay_us(5);
+            RA0 = 0;            //LOW
+
+            TRISA0 = 1;
+            if(RA0 == 1){
+                TMR1L = 0;
+                TMR1H = 0;
+                TMR1IF = 0;
+                count_time = 0;
+                while(RA0 == 1){
+                    if(TMR0IF){
+                        count_time += 65536;
+                        TMR1IF = 0;
+                    }
+                    if(count_time > 30000) break;
                 }
-                if(count_time > 1000000) break;
+                if(TMR1IF){
+                    count_time += TMR1 + 65536;
+                }else{
+                    count_time += TMR1;
+                }
+                count_time = count_time / 6.169463087248322;
+                if(count_time > 4000) count_time = 4000;
+                if(count_time < 20) count_time = 0;
+//                send_data[0] = count_time % 0x100;
+//                send_data[1] = count_time / 0x100;
+                average[i] = count_time;
+                __delay_ms(1);
             }
-            if(TMR1IF){
-                count_time += TMR1 + 65536;
-            }else{
-                count_time += TMR1;
-            }
-            count_time = count_time / 6.169463087248322;
-            if(count_time > 4000) count_time = 4000;
-            if(count_time < 0) count_time = 0;
-            send_data[0] = count_time % 0x100;
-            send_data[1] = count_time / 0x100;
-            __delay_ms(1);
         }
-    return (0);
+        for( i = 0; i < 5; i++){
+            average_ans += average[i];
+        }
+        send_data[0] = average_ans % 0x100;
+        send_data[1] = average_ans / 0x100;
     }
+    return (0);
 }
 
 void init() {
